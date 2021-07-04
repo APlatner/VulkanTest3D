@@ -11,15 +11,15 @@
 
 namespace lve {
 
-class MyEngineSwapChain {
+class LveSwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  MyEngineSwapChain(MyEngineDevice &deviceRef, VkExtent2D windowExtent);
-  ~MyEngineSwapChain();
+  LveSwapChain(LveDevice &deviceRef, VkExtent2D windowExtent);
+  ~LveSwapChain();
 
-  MyEngineSwapChain(const MyEngineSwapChain &) = delete;
-  void operator=(const MyEngineSwapChain &) = delete;
+  LveSwapChain(const LveSwapChain &) = delete;
+  void operator=(const LveSwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -65,7 +65,7 @@ class MyEngineSwapChain {
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
-  MyEngineDevice &device;
+  LveDevice &device;
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
