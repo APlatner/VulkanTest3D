@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <vector>
+// #include <ctime>
 
 namespace lve {
     class FirstApp {
@@ -36,5 +37,7 @@ namespace lve {
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
         std::unique_ptr<LveModel> lveModel;
+        // time_t start;
+        // int iterations;
     };
 }
