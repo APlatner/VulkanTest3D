@@ -64,7 +64,10 @@ void FirstApp::run() {
 }
 
 void FirstApp::loadModels() {
-    std::vector<LveModel::Vertex> vertices {{{0.0f, -0.9f}}, {{0.9f, 0.9f}}, {{-0.9f, 0.9f}}};
+    std::vector<LveModel::Vertex> vertices {
+        {{0.0f, -0.9f}, {1.0f, 0.0f, 0.0f}}, 
+        {{0.9f, 0.9f}, {0.0f, 1.0f, 0.0f}}, 
+        {{-0.9f, 0.9f}, {0.0f, 0.0f, 1.0f}}};
     // for(int i = 0; i < iterations; i++){
     //     vertices  = sierpinskiTriangle(vertices);
     // }
