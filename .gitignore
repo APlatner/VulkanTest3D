@@ -1,2 +1,3 @@
 # ignore a.out and shader .spv files
 a.out
+shaders/*.spv
