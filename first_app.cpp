@@ -16,10 +16,26 @@ FirstApp::~FirstApp() {
 }
 
 std::vector<LveModel::Vertex> sierpinskiTriangle(std::vector<LveModel::Vertex> &vertices) {
-    for(int i = 0; i < vertices.size() - 1; i++) {
-        vertices[i].position;
+    std::vector<LveModel::Vertex> newVertices;
+    LveModel::Vertex vertex;
+    for(int i = 0; i < vertices.size() / 3; i++) {
+        newVertices.push_back(vertices[i]);
+        vertex.position = (vertices[i * 3].position + vertices[i * 3 + 1].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
+        vertex.position = (vertices[i * 3].position + vertices[i * 3 + 2].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
+        newVertices.push_back(vertices[i + 1]);
+        vertex.position = (vertices[i * 3 + 1].position + vertices[i * 3 + 2].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
+        vertex.position = (vertices[i * 3 + 1].position + vertices[i * 3].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
+        newVertices.push_back(vertices[i + 2]);
+        vertex.position = (vertices[i * 3 + 2].position + vertices[i * 3 + 1].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
+        vertex.position = (vertices[i * 3 + 2].position + vertices[i * 3].position)/glm::vec2(2.0f, 2.0f);
+        newVertices.push_back(vertex);
     }
-    return vertices;
+    return newVertices;
 }
 
 void FirstApp::run() {
@@ -34,9 +50,8 @@ void FirstApp::run() {
 void FirstApp::loadModels() {
     std::vector<LveModel::Vertex> vertices {
         {{0.0f, -0.9f}}, {{0.9f, 0.9f}}, {{-0.9f, 0.9f}}
-        
         };
-    lveModel = std::make_unique<LveModel>(lveDevice, vertices);
+    lveModel = std::make_unique<LveModel>(lveDevice, sierpinskiTriangle(vertices));
 }
 
 void FirstApp::createPipelineLayout() {
