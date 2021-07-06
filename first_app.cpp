@@ -1,62 +1,32 @@
 #include "first_app.hpp"
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include <stdexcept>
 
 namespace lve {
+
+struct SimplePushConstantData {
+    glm::vec2 offset;
+    alignas(16) glm::vec3 color;
+};
 
 FirstApp::FirstApp() {
     loadModels();
     createPipelineLayout();
     recreateSwapChain();
     createCommandBuffers();
-    // start = time(0);
-    // iterations = 0;
 }
 
 FirstApp::~FirstApp() {
     vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
 }
 
-std::vector<LveModel::Vertex> sierpinskiTriangle(std::vector<LveModel::Vertex> vertices) {
-    std::vector<LveModel::Vertex> newVertices;
-    LveModel::Vertex vertex;
-    for(int i = 0; i < vertices.size() / 3; i++) {
-
-        // First sierpinski subsection
-        newVertices.push_back(vertices[i * 3]);
-        vertex.position = (vertices[i * 3].position + vertices[i * 3 + 1].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-        vertex.position = (vertices[i * 3].position + vertices[i * 3 + 2].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-
-        // Second sierpinski subsection
-        vertex.position = (vertices[i * 3 + 1].position + vertices[i * 3].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-        newVertices.push_back(vertices[i * 3 + 1]);
-        vertex.position = (vertices[i * 3 + 1].position + vertices[i * 3 + 2].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-
-        // Third sierpinski subsection
-        vertex.position = (vertices[i * 3 + 2].position + vertices[i * 3].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-        vertex.position = (vertices[i * 3 + 2].position + vertices[i * 3 + 1].position)/glm::vec2(2.0f, 2.0f);
-        newVertices.push_back(vertex);
-        newVertices.push_back(vertices[i * 3 + 2]);
-    }
-    return newVertices;
-}
-
 void FirstApp::run() {
     while(!lveWindow.shouldClose()) {
         glfwPollEvents();
-        // if((int)difftime( time(0), start) != iterations && iterations < 10) {
-        //     vkDeviceWaitIdle(lveDevice.device());
-        //     vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
-        //     iterations++;
-        //     loadModels();
-        //     createPipelineLayout();
-        //     createPipeline();
-        //     createCommandBuffers();
-        // }
         drawFrame();
     }
 
@@ -65,22 +35,24 @@ void FirstApp::run() {
 
 void FirstApp::loadModels() {
     std::vector<LveModel::Vertex> vertices {
-        {{0.0f, -0.9f}, {1.0f, 0.0f, 0.0f}}, 
-        {{0.9f, 0.9f}, {0.0f, 1.0f, 0.0f}}, 
-        {{-0.9f, 0.9f}, {0.0f, 0.0f, 1.0f}}};
-    // for(int i = 0; i < iterations; i++){
-    //     vertices  = sierpinskiTriangle(vertices);
-    // }
+        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}}, 
+        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, 
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
     lveModel = std::make_unique<LveModel>(lveDevice, vertices);
 }
 
 void FirstApp::createPipelineLayout() {
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(SimplePushConstantData);
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pSetLayouts = nullptr;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if(vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -121,7 +93,6 @@ void FirstApp::recreateSwapChain() {
         }
     }
 
-    // if render pass is compatible, do nothing else
     createPipeline();
 }
 
@@ -145,6 +116,9 @@ void FirstApp::freeCommandBuffers() {
 }
 
 void FirstApp::recordCommandBuffer(int imageIndex) {
+    static int frame = 0;
+    frame = (frame + 1) % 1000;
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     
@@ -161,7 +135,7 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
     renderPassInfo.renderArea.extent = lveSwapChain->getSwapChainExtent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.1f, 0.1f, 0.1f, 1.0f};
+    clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
     clearValues[1].depthStencil = {1.0f, static_cast<uint32_t>(0.0f)};
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -181,7 +155,21 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
 
     lvePipeline->bind(commandBuffers[imageIndex]);
     lveModel->bind(commandBuffers[imageIndex]);
-    lveModel->draw(commandBuffers[imageIndex]);
+
+    for (int j = 0; j < 4; j++) {
+        SimplePushConstantData push{};
+        push.offset = {-0.5f + frame * 0.002f, -0.4f + j * 0.25f};
+        push.color = {0.0f, 0.0f, 0.2f * j};
+
+        vkCmdPushConstants(
+            commandBuffers[imageIndex], 
+            pipelineLayout, 
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
+            0, 
+            sizeof(SimplePushConstantData), 
+            &push);
+        lveModel->draw(commandBuffers[imageIndex]);
+    }
 
     vkCmdEndRenderPass(commandBuffers[imageIndex]);
     if(vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {

@@ -46,6 +46,11 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "unordered_set": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "bit": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "ctime": "cpp",
+        "ranges": "cpp"
     }
 }
