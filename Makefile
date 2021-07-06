@@ -1,12 +1,13 @@
+include .env
+
 CFLAGS = -std=c++17 -O2
-LDFLAGS = -lglfw -lvulkan -L/home/andrew/vulkan/1.2.176.1/x86_64/etc/vulkan/explicit_layer.d -ldl -lpthread -lX11 -lXxf86vm -lXrandr -L/usr/include/X11/extensions/XI.h
-GLSLC = /usr/local/bin/glslc
+LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 vertSources = $(shell find ./shaders -type f -name "*.vert")
 vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
 fragSources = $(shell find ./shaders -type f -name "*.frag")
 fragObjFiles = $(patsubst %.frag, %.frag.spv, $(fragSources))
-
+ # L/usr/include/X11/extensions/
 TARGET = a.out
 $(TARGET): $(vertObjFiles) $(fragObjFiles)
 $(TARGET): *.cpp *.hpp
@@ -17,8 +18,8 @@ $(TARGET): *.cpp *.hpp
 
 .PHONY: test clean
 
-test: a.out
-	./a.out
+test: $(TARGET)
+	./$(TARGET)
 
 clean:
 	rm -f a.out

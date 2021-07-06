@@ -1,3 +1,5 @@
 # ignore a.out and shader .spv files
 a.out
+.env
 shaders/*.spv
+.vscode/
